@@ -1,0 +1,164 @@
+Notes on SQL Practice. 
+
+Syntax tends to be very simple for SQL:
+
+>CREATE DATABASE test1;
+>DROP DATABASE test1;
+
+>USE test1;  
+##indicates which DB we want to be running queries against
+
+>CREATE TABLE test (
+  test_column INT
+)
+##Creates a table within the DB with the column of name "test_column" that uses the integer type (INT) for its data
+
+
+##What if I want to make a change to the columns of the table WITHOUT deleting the previous column(s)? That's where 'ALTER TABLE' comes in
+
+>ALTER TABLE test1
+>ADD test_column2 VARCHAR(255);
+##A couple notes: 'ALTER TABLE' assigns the table to update, ADD is as expected, VARCHAR(X) is the equivalent to a string type with a max length of 255. 
+##So I've just updated the existing table to include a brand new column that saves strings up to 255 characters in length
+
+>DROP TABLE test1;
+
+
+>CREATE TABLE bands (
+  ID INT NOT NULL AUTO_INCREMENT
+  name VARCHAR(255) NOT NULL  
+);
+##"AUTO_INCREMENT" will begin a count for the ID column. Essentially every table ever used should have an ID column to avoid duplicates. The id acts as the 
+##"Primary Key" to identify the uniqueness of the table column.
+##"NOT NULL" Requires the table to always have that column popluated. Will throw an error if a band is added without a name.
+
+
+##The SQL command below will create a new table named "albums" with the following columns: id, name, release year, band_id. band_id should be the same id as 
+## the id column in the "bands" table. 
+>CREATE TABLE albums(
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  release_year INT,
+  band_id INT NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (band_id) REFERENCES bands(id)  
+);
+#FOREIGN KEYS reference foreign tables. So the last line is saying "the foreign key 'band_id' is specifically referencing the 'id' column in the 'bands' table"
+##This matches them, and any attempted deletion of data in either column will warn that the data from both tables will need to be deleted. Otherwise there'd
+#be a mis-match.
+
+
+##Adding data:
+>INSERT INTO bands (name)
+VALUES ("Iron Maiden");
+#Added a specific band into the name column of the bands table.
+
+
+##Querying data:
+>SELECT id as 'ID', name AS 'BAND NAME'
+FROM bands;
+## Order matters too. Reversing the ID and band name in the query will reverse the outputs on the table 
+
+>INSERT INTO albums (name, release_year, band_id)
+VALUES('The number of the Beasts', 1985, 1),
+	  ('Power Slave', 1984, 1),
+    ('Nightmare', 2018, 2),
+    ('Nightmare', 2010, 3),
+    ('Test Album', NULL, 3);
+
+>SELECT DISTINCT name FROM albums;
+
+>UPDATE albums
+SET realease_year = 1998
+WHERE id = 1;
+
+
+>SELECT * FROM albums
+WHERE release_year < 2010;
+
+>SELECT * FROM albums
+WHERE name LIKE '%er%' OR band_id = 1;
+
+>SELECT * FROM albums
+WHERE release_year BETWEEN 1982 AND 2018;
+
+
+##Talking about Table Joins:
+>SELECT * FROM bands
+JOIN albums ON bands.id = albums.band_id;
+##Inner Joins combine data where there is both value on the Left (the table written first, bands) matching the table on the right (the second table, albums)
+##Left Join returns all bands on the left table even if they don't have any matching albums. E.g no albums are associated with some bands, but the band and 
+##id still show up because it's a join.
+##Right Join returns all albums on the right table. In this case, no album can exist without a band, so no new data should be queried
+
+
+##Aggregate Functions
+##Functions executed across all the values in a column.
+>SELECT AVG(release_year) FROM albums;
+
+>SELECT band_id, COUNT(band_id) FROM albums
+GROUP BY band_id;
+
+>SELECT b.id AS 'Band Name', COUNT(a.id) AS 'Number of Albums'
+FROM bands AS b
+LEFT JOIN albums AS a ON b.id = a.band_id
+GROUP BY b.id;
+##1. Assign the columns that we care about. Aliasing (b., a.) is used to make the query a little shorter
+##2. We're calling FROM the bands table, and reassigning it AS 'b' (the first aliasing)
+##3. LEFT JOIN both tables with 'b' being the first table so we can even see bands without albums. albums as called AS 'a' (the second aliasing)
+##4. Finally, GROUP BY the id in the 'b' table to coalesce the values into single columns.
+##Damn confusing, but VERY powerful
+
+##HAVING Statement
+## This is the exact same as WHERE, but it happens after the GROUP BY. 
+
+>SELECT b.id AS 'Band Name', COUNT(a.id) AS 'Number of Albums'
+FROM bands AS b
+LEFT JOIN albums AS a ON b.id = a.band_id
+GROUP BY b.id
+HAVING 'Number of Albums' = 1;
+#Great way to filter, but will need to focus on not using strings when aliasing. The HAVING filter was failing in my query when the I was using 'Number of Albums', 
+##so I had to switch to Number_of_Albums.
+
+LIST OF COMMANDS:
+- CREATE
+- DROP DATABASE
+- DROP TABLES
+- UPDATE
+- ALTER
+- ADD
+- VARCHAR(X)
+- INT
+- NOT NULL 
+- AUTO_INCREMENT
+- FOREIGN KEY
+- REFERENCES
+- INSERT INTO
+- VALUES
+- SELECT
+- SELECT * FROM 
+- SELECT [column name] * FROM [table name] 
+- LIMIT
+- AS
+- FROM
+- ORDER BY
+- ORDER BY DESC
+- DISTINCT
+- WHERE
+- SET
+- Operators: <,>,=, etc
+- LIKE
+- % operator (e.g %er%, %ing, a%)
+- OR
+- AND
+- BETWEEN
+- IS
+- JOIN = INNER JOIN
+- LEFT JOIN
+- RIGHT JOIN
+- ON
+- AVG
+- SUM
+- COUNT
+- GROUP BY
+
